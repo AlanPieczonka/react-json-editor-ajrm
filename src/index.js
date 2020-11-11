@@ -368,6 +368,7 @@ class JSONInput extends Component {
                                             this.state.commentContent
                                         )
                                         this.resetCommentedLine()
+                                        this.resetCommentContent()
                                     }}
                                 >
                                     Add
