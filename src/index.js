@@ -18,6 +18,9 @@ class JSONInput extends Component {
         this.scheduledUpdate     = this.scheduledUpdate     .bind(this);
         this.setUpdateTime       = this.setUpdateTime       .bind(this);
         this.renderLabels        = this.renderLabels        .bind(this);
+        this.setCommentedLine = this.setCommentedLine.bind(this);
+        this.resetCommentedLine = this.resetCommentedLine.bind(this);
+        this.handleCommentContent = this.handleCommentContent.bind(this);
         this.newSpan             = this.newSpan             .bind(this);
         this.renderErrorMessage  = this.renderErrorMessage  .bind(this);
         this.onScroll            = this.onScroll            .bind(this);
@@ -38,7 +41,9 @@ class JSONInput extends Component {
             json            : '',
             jsObject        : undefined,
             lines           : false,
-            error           : false
+            error           : false,
+            commentedLine: null,
+            commentContent: ''
         };
         if (!this.props.locale) {
             console.warn("[react-json-editor-ajrm - Deprecation Warning] You did not provide a 'locale' prop for your JSON input - This will be required in a future version. English has been set as a default.");
@@ -277,6 +282,7 @@ class JSONInput extends Component {
                             backgroundColor          : colors.background,
                             transitionDuration       : '0.2s',
                             transitionTimingFunction : 'cubic-bezier(0, 1, 0.5, 1)',
+                            position: 'relative',
                             ...style.body
                         }}
                         onClick = { this.onClick }
@@ -334,6 +340,39 @@ class JSONInput extends Component {
                             autoCapitalize = 'off'
                             spellCheck     = { false }
                         />
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    opacity: this.state.commentedLine === null ? 0.2 : 1,
+                                    width: "100%",
+                                    height: "100px",
+                                    bottom: 0,
+                                    border: "1px solid",
+                                    borderRadius: "10px",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: "space-evenly",
+                                }}
+                                >
+                                <span style={{ textAlign: "center" }}>Comment</span>
+                                <textarea
+                                    style={{ display: "block", margin: "0 auto", border: "1px solid" }}
+                                    onChange={this.handleCommentContent}
+                                    value={this.state.commentContent}
+                                />
+                                <button
+                                    style={{ display: "block", margin: "0 auto" }}
+                                    onClick={() => {
+                                        this.props.onCommentAdd(
+                                            this.state.commentedLine,
+                                            this.state.commentContent
+                                        )
+                                        this.resetCommentedLine()
+                                    }}
+                                >
+                                    Add
+                                </button>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -368,30 +407,69 @@ class JSONInput extends Component {
             </p>
         );
     }
+
+    setCommentedLine(line) {
+        this.setState({ commentedLine: line !== this.state.commentedLine ? line : null })
+    }
+
+    resetCommentedLine() {
+        this.setState({ commentedLine: null })
+    }
+
+    resetCommentContent() {
+        this.setState({ commentContent: '' })
+    }
+
+    handleCommentContent(event) {
+        this.setState({commentContent: event.target.value});
+    }
+
     renderLabels(){
         const
             colors    = this.colors,
             style     = this.style,
             error     = this.props.error || this.state.error,
             errorLine = error ? error.line : -1,
-            lines     = this.state.lines ? this.state.lines : 1;
+            lines     = this.state.lines ? this.state.lines : 1,
+            commentedLine = this.state.commentedLine,
+            highlightedLine = this.props.highlightedLine
+            
         let
             labels    = new Array(lines);
         for(var i = 0; i < lines - 1; i++) labels[i] = i + 1;
         return labels.map( number => {
             const color = number !== errorLine ? colors.default : 'red';
-            return (
-                <div
-                    key   = {number}
-                    style = {{
-                        ...style.labels,
-                        color : color
-                    }}
-                >
-                    {number}
-                </div>
-            );
-        });
+                return (
+                    <div
+                        key={number}
+                        style={{
+                            ...style.labels,
+                            color: color,
+                            cursor: "pointer",
+                        }}
+                    >
+                    {number}{" "}
+                    <span
+                        style={{ color: "blue", fontWeight: "bold" }}
+                        onClick={this.setCommentedLine.bind(this, number)}
+                    >
+                        +
+                    </span>{" "}
+                    {(number + 1 === commentedLine || number + 1 === highlightedLine) && (
+                        <div
+                        onClick={this.resetCommentedLine}
+                        style={{
+                            position: "absolute",
+                            width: "470px",
+                            height: "18px",
+                            backgroundColor: number + 1 === commentedLine ? "green" : "blue",
+                            opacity: 0.2,
+                        }}
+                        ></div>
+                    )}
+                    </div>
+                );
+            });
     }
     createMarkup(markupText){
         if(markupText===undefined) return { __html: '' };
