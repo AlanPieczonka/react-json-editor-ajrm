@@ -410,10 +410,12 @@ class JSONInput extends Component {
     }
 
     setCommentedLine(line) {
+        this.props.onLineSelect(line)
         this.setState({ commentedLine: line !== this.state.commentedLine ? line : null })
     }
 
-    resetCommentedLine() {
+    resetCommentedLine(line) {
+        this.props.onLineReset(line)
         this.setState({ commentedLine: null })
     }
 
@@ -458,7 +460,7 @@ class JSONInput extends Component {
                     </span>{" "}
                     {(number + 1 === commentedLine || number + 1 === highlightedLine) && (
                         <div
-                        onClick={this.resetCommentedLine}
+                        onClick={this.resetCommentedLine.bind(this, number)}
                         style={{
                             position: "absolute",
                             width: "470px",
