@@ -20,7 +20,6 @@ class JSONInput extends Component {
         this.renderLabels        = this.renderLabels        .bind(this);
         this.setCommentedLine = this.setCommentedLine.bind(this);
         this.resetCommentedLine = this.resetCommentedLine.bind(this);
-        this.handleCommentContent = this.handleCommentContent.bind(this);
         this.newSpan             = this.newSpan             .bind(this);
         this.renderErrorMessage  = this.renderErrorMessage  .bind(this);
         this.onScroll            = this.onScroll            .bind(this);
@@ -42,8 +41,7 @@ class JSONInput extends Component {
             jsObject        : undefined,
             lines           : false,
             error           : false,
-            commentedLine: null,
-            commentContent: ''
+            commentedLine: null
         };
         if (!this.props.locale) {
             console.warn("[react-json-editor-ajrm - Deprecation Warning] You did not provide a 'locale' prop for your JSON input - This will be required in a future version. English has been set as a default.");
@@ -282,7 +280,6 @@ class JSONInput extends Component {
                             backgroundColor          : colors.background,
                             transitionDuration       : '0.2s',
                             transitionTimingFunction : 'cubic-bezier(0, 1, 0.5, 1)',
-                            position: 'relative',
                             ...style.body
                         }}
                         onClick = { this.onClick }
@@ -340,40 +337,6 @@ class JSONInput extends Component {
                             autoCapitalize = 'off'
                             spellCheck     = { false }
                         />
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    opacity: this.state.commentedLine === null ? 0.2 : 1,
-                                    width: "100%",
-                                    height: "100px",
-                                    bottom: 0,
-                                    border: "1px solid",
-                                    borderRadius: "10px",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: "space-evenly",
-                                }}
-                                >
-                                <span style={{ textAlign: "center" }}>Comment</span>
-                                <textarea
-                                    style={{ display: "block", margin: "0 auto", border: "1px solid" }}
-                                    onChange={this.handleCommentContent}
-                                    value={this.state.commentContent}
-                                />
-                                <button
-                                    style={{ display: "block", margin: "0 auto" }}
-                                    onClick={() => {
-                                        this.props.onCommentAdd(
-                                            this.state.commentedLine,
-                                            this.state.commentContent
-                                        )
-                                        this.resetCommentedLine()
-                                        this.resetCommentContent()
-                                    }}
-                                >
-                                    Add
-                                </button>
-                            </div>
                     </div>
                 </div>
             </div>
@@ -416,14 +379,6 @@ class JSONInput extends Component {
     setCommentedLine(line) {
         this.props.onLineSelect(line, this.resetCommentedLine)
         this.setState({ commentedLine: line !== this.state.commentedLine ? line : null })
-    }
-
-    resetCommentContent() {
-        this.setState({ commentContent: '' })
-    }
-
-    handleCommentContent(event) {
-        this.setState({commentContent: event.target.value});
     }
 
     renderLabels(){
