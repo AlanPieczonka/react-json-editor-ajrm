@@ -372,7 +372,8 @@ class JSONInput extends Component {
         );
     }
 
-    resetCommentedLine(line) {
+    resetCommentedLine() {
+        this.props.onLineReset()
         this.setState({ commentedLine: null })
     }
 
