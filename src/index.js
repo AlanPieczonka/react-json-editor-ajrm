@@ -1064,12 +1064,12 @@ class JSONInput extends Component {
                 isValue    : false
             };
             function setError(tokenID,reason,offset=0){
-                error = {
-                    token  : tokenID,
-                    line   : line,
-                    reason : reason
-                };
-                buffer.tokens_merge[tokenID+offset].type = 'error';
+                // error = {
+                //     token  : tokenID,
+                //     line   : line,
+                //     reason : reason
+                // };
+                // buffer.tokens_merge[tokenID+offset].type = 'error';
             }
             function followedBySymbol(tokenID,options){
                 if(tokenID===undefined) console.error('tokenID argument must be an integer.');
