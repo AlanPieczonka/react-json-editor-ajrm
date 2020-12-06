@@ -1506,6 +1506,64 @@ class JSONInput extends Component {
             };
             if(!error)
             for(var i = 0; i < buffer.tokens_merge.length; i++){
+                const
+                    token  = buffer.tokens_merge[i],
+                    string = token.string,
+                    type   = token.type;
+                switch(type){
+                    case 'space' : case 'linebreak' : break;
+                    case 'string' : case 'number'    : case 'primitive' : case 'error' :
+                        buffer.markup += ((followsSymbol(i,[',','[']) ? newLineBreakAndIndent() : '') + newSpan(i,token,_depth));
+                    break;
+                    case 'key' :
+                        buffer.markup += (newLineBreakAndIndent() + newSpan(i,token,_depth));
+                    break;
+                    case 'colon' :
+                        buffer.markup += (newSpan(i,token,_depth) + '&nbsp;');
+                    break;
+                    case 'symbol' :
+                        switch(string){
+                            case '[' : case '{' :
+                                buffer.markup += ((!followsSymbol(i,[':']) ? newLineBreakAndIndent() : '') + newSpan(i,token,_depth)); _depth++;
+                            break;
+                            case ']' : case '}' :
+                                _depth--;
+                                const
+                                    islastToken  = i === buffer.tokens_merge.length - 1,
+                                    _adjustment = i > 0 ? ['[','{'].indexOf(buffer.tokens_merge[i-1].string)>-1  ? '' : newLineBreakAndIndent(islastToken) : '';
+                                buffer.markup += (_adjustment + newSpan(i,token,_depth));
+                            break;
+                            case ',' :
+                                buffer.markup += newSpan(i,token,_depth);
+                            break;
+                        }
+                    break;
+                }
+            }
+            if(error){
+                let _line_fallback = 1;
+                function countCarrigeReturn(string){
+                    let count = 0;
+                    for(var i = 0; i < string.length; i++){
+                        if(['\n','\r'].indexOf(string[i])>-1) count++;
+                    }
+                    return count;
+                }
+                _line = 1;
+                for(var i = 0; i < buffer.tokens_merge.length; i++){
+                    const
+                        token  = buffer.tokens_merge[i],
+                        type   = token.type,
+                        string = token.string;
+                    if(type==='linebreak') _line++;
+                    buffer.markup += newSpan(i,token,_depth);
+                    _line_fallback += countCarrigeReturn(string);
+                }
+                _line++;
+                _line_fallback++;
+                if(_line < _line_fallback) _line = _line_fallback;
+            }
+            for(var i = 0; i < buffer.tokens_merge.length; i++){
                 let token = buffer.tokens_merge[i];
                 buffer.indented += token.string;
                 if(['space','linebreak'].indexOf(token.type)===-1) buffer.tokens_plainText += token.string;
